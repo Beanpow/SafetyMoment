@@ -60,48 +60,9 @@ class MomentManager:
     def GetAllMoments(self):
         return self.GetMoments([1,2,3,4])
 
-m = MomentManager()
-print(m.GetMoments([1,4]))
-
-
-# while(1):
-
-#     ser.write(reqForPort4)
-#     time.sleep(1)
-#     # n = ser.inWaiting()
-#     # print(n)
-#     dataHex = ser.read_all()
-#     rawDataHex = dataHex
-#     # print(binascii.b2a_hex(rawDataHex))
-
-#     dataHex = binascii.b2a_hex(rawDataHex)
-#     dataHex = str(dataHex)
-#     dataHex = dataHex.split('\'')[1]
-
-#     assert(len(dataHex) == 14)
-
-#     id = int(dataHex[0:2])
-#     moment = int(dataHex[6:10], 16)
-
-
-#     if moment > 32768:
-#         moment = moment - 65536
-    
-#     moment /= 10
-
-
-#     print(id, moment)
-
-
-
-
-
-
-
-
-
-
-
+if __name__ == "__main__":
+    m = MomentManager()
+    print(m.GetMoments([1,4]))
 
 
 
