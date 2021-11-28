@@ -25,7 +25,7 @@ class MomentManager:
         '''
         req = self.reqListForPortList[portNum - 1]
         self.ser.write(req)
-        time.sleep(0.05)#the time must more than 0.05(may be less?)
+        time.sleep(0.04)#the time must more than 0.05(may be less?)
         dataHex = self.ser.read_all()
         rawDataHex = dataHex
 
@@ -62,7 +62,7 @@ class MomentManager:
 
 if __name__ == "__main__":
     m = MomentManager()
-    print(m.GetMoments([1,4]))
+    print(m.GetMoments([1]))
 
 
 
