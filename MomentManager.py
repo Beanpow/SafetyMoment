@@ -25,7 +25,7 @@ class MomentManager:
         '''
         req = self.reqListForPortList[portNum - 1]
         self.ser.write(req)
-        time.sleep(0.04)#the time must more than 0.05(may be less?)
+        time.sleep(0.04)#the time must more than 0.04
         dataHex = self.ser.read_all()
         rawDataHex = dataHex
 
