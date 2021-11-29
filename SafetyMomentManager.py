@@ -33,6 +33,10 @@ class SafetyMomentManager:
         process raw safety moment data to get the final safety moment data throught Least squares method 
         '''
         rawMomentData, rawAngleData = self._RecordRawSafetyMoment()
+        assert(len(rawAngleData) == len(rawMomentData))
+
+        # for indx in rawAngleData:
+
 
     # TODO
     def _RecordRawSafetyMoment(self):
@@ -40,7 +44,7 @@ class SafetyMomentManager:
         record angle and moment 
         '''
         momentManager = MomentManager()
-        angelManager = AngleManager()
+        #angelManager = AngleManager()
         timeDuration = 1.0 / self.sampleRate
         momentData = []
         angleData = []
@@ -49,10 +53,10 @@ class SafetyMomentManager:
             while(1):
                 startTime = time.time()
                 moment = momentManager.GetAllMoments()
-                angle = angelManager.GetAllMoment()
+                #angle = angelManager.GetAllMoment()
 
                 momentData.append(moment[0])
-                angleData.append(angle)
+                #angleData.append(angle[0])
                 
                 endTime = time.time()
                 print(endTime - startTime)
@@ -62,9 +66,10 @@ class SafetyMomentManager:
 
         except KeyboardInterrupt:
             print("End the Record!")
-        
+         
+        np.save('rawdata.npy', momentData)
         return momentData, angleData
 
 
 if __name__ == "__main__":
-    smm = SafetyMomentManager('hekaibo')
+    smm = SafetyMomentManager('hkb', sampleRate=6)
