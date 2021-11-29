@@ -4,7 +4,7 @@ import binascii
 import sys
 
 class MomentManager:
-    def __init__(self, port='com3', byterate=9600, timeout=0.5) -> None:
+    def __init__(self, port='com3', byterate=38400, timeout=0.5) -> None:
         self.reqListForPortList = [ bytes([0x01, 0x03, 0x00, 0x00, 0x00, 0x01, 0x84, 0x0A]),
                                     bytes([0x02, 0x03, 0x00, 0x00, 0x00, 0x01, 0x84, 0x39]),
                                     bytes([0x03, 0x03, 0x00, 0x00, 0x00, 0x01, 0x85, 0xE8]),
@@ -25,7 +25,7 @@ class MomentManager:
         '''
         req = self.reqListForPortList[portNum - 1]
         self.ser.write(req)
-        time.sleep(0.04)#the time must more than 0.04
+        time.sleep(0.03)#the time must more than 0.02
         dataHex = self.ser.read_all()
         rawDataHex = dataHex
 
@@ -33,7 +33,12 @@ class MomentManager:
         dataHex = binascii.b2a_hex(rawDataHex)
         dataHex = str(dataHex)
         dataHex = dataHex.split('\'')[1]
-        assert(len(dataHex) == 14)
+
+        try:
+            assert(len(dataHex) == 14)
+        except AssertionError:
+            print(rawDataHex)
+            sys.exit()
         
         id = int(dataHex[0:2])
         assert(id == portNum)
@@ -62,35 +67,5 @@ class MomentManager:
 
 if __name__ == "__main__":
     m = MomentManager()
-    print(m.GetMoments([1]))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#     # dataHex = str(dataHex).split('\'')[1]
-#     # dataHex = dataHex.split('\\x')
-
-#     # id = int(dataHex[1])
-#     # try:
-#     #     lowByte = dataHex[5][0:2]
-#     # except IndexError:
-#     #     print(rawDataHex)
-#     #     break
-#     # highByte = dataHex[4]
-#     # # moment = lowByte + 
-
-#     # print(id, lowByte, highByte)
-#     # print(dataHex, rawDataHex)
-
-    
+    while(1):
+        print(m.GetMoments([1,2,3,4]))
