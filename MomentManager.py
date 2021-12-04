@@ -5,10 +5,12 @@ import sys
 
 class MomentManager:
     def __init__(self, port='com3', byterate=38400, timeout=0.5) -> None:
-        self.reqListForPortList = [ bytes([0x01, 0x03, 0x00, 0x00, 0x00, 0x01, 0x84, 0x0A]),
+        self.__reqListForPortList = [ bytes([0x01, 0x03, 0x00, 0x00, 0x00, 0x01, 0x84, 0x0A]),
                                     bytes([0x02, 0x03, 0x00, 0x00, 0x00, 0x01, 0x84, 0x39]),
                                     bytes([0x03, 0x03, 0x00, 0x00, 0x00, 0x01, 0x85, 0xE8]),
                                     bytes([0x04, 0x03, 0x00, 0x00, 0x00, 0x01, 0x84, 0x5F])]
+
+        self.reqListForPortList = []
 
         try:
             self.ser = serial.Serial(port, byterate, timeout=timeout)
@@ -20,10 +22,13 @@ class MomentManager:
         self.ser.close()
 
     def GetMoment(self, portNum):
+        pass
+
+    def __GetMoment(self, portNum):
         '''
         portNum = [1, 2, 3, 4]
         '''
-        req = self.reqListForPortList[portNum - 1]
+        req = self.__reqListForPortList[portNum - 1]
         self.ser.write(req)
         time.sleep(0.03)#the time must more than 0.02
         dataHex = self.ser.read_all()
