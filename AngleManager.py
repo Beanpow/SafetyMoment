@@ -24,8 +24,8 @@ class AngleManager:
     def _sendMessage(self, req):
         self.ser.write(req)
 
-    def emergencyStop(self):
-        while 1:
+    def emergencyStopButton(self):
+        for _ in range(1000):
             self._sendMessage(self.emergencyStop)
 
     def waitingForState(self, state):
@@ -33,25 +33,51 @@ class AngleManager:
             if self.getCurrentState() == state
                 break
 
+        self.assertState(state)
+
     def assertState(self, state):
         nowState = self.getCurrentState()
         if nowState != state:
-            raise StateERROR
-            
+            raise AssertionError
 
-
-    def standUp(self):
-        self.waitingForState(1)
+    def standUpOrSitButton(self):
         self._sendMessage(self.standUpOrSit)
+
+    def confirmButton(self):
+        self._sendMessage(self.confirm)
+
+    def walkOrPauseButton(self):
+        self._sendMessage(self.walkOrPause)
+
+    def autoStartWalk(self):
+        #done init
+        self.waitingForState(1)
+
+        #stand up
+        self.standUp()
         self.waitingForState(2)
 
-    def walk(self):
+        #confirm stand up
+        self.confirm()
+
+        #waiting for state 1
         self.waitingForState(1)
-        self._sendMessage(self.standUpOrSit)
-        self.waitingForState(2)
-        self._sendMessage(self.standUpOrSit)
+
+        #walk
+        self.walkOrPauseButton()
+
+
+
+
+
+
 
     def manualControl(self):
+        # done init
+        pass
+
+
+
 
 
     def getCurrentState(self):
