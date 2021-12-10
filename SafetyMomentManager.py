@@ -64,6 +64,7 @@ class SafetyMomentManager:
         try:
             if self.autoPlot:
                 plt.figure(1)
+            recordStartTime = time.time()
             while(1):
                 if self.autoPlot:
                     plt.clf()
@@ -84,11 +85,14 @@ class SafetyMomentManager:
                 if self.autoPlot:
                     plt.plot(momentData[-100:])
                     plt.pause(0.01)
+                
+                if time.time() - recordStartTime > timeLong:
+                    break
 
         except KeyboardInterrupt:
             print("End the Record!")
          
-        np.save('rawdata1.npy', momentData)
+        np.save('rawdata_' + self.userName + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + '.npy', momentData)
         return momentData, angleData
 
 
