@@ -30,13 +30,15 @@ class AngleManager:
 
     def waitingForState(self, state):
         while 1:
-            if self.getCurrentState() == state
+            print(self.getInfo()[0])
+            if self.getInfo()[0] == state:
                 break
 
         self.assertState(state)
 
     def assertState(self, state):
-        nowState = self.getCurrentState()
+        info = self.getInfo()
+        nowState = info[0]
         if nowState != state:
             raise AssertionError
 
@@ -51,26 +53,20 @@ class AngleManager:
 
     def autoStartWalk(self):
         #done init
-        self.waitingForState(1)
+        self.waitingForState(0)
 
         #stand up
-        self.standUp()
+        self.standUpOrSitButton()
         self.waitingForState(2)
 
         #confirm stand up
-        self.confirm()
+        self.confirmButton()
 
         #waiting for state 1
         self.waitingForState(1)
 
         #walk
         self.walkOrPauseButton()
-
-
-
-
-
-
 
     def manualControl(self):
         # done init
@@ -80,20 +76,21 @@ class AngleManager:
 
 
 
-    def getCurrentState(self):
-        rawDataHex = self.ser.read(3)
+    def getInfo(self):
+        rawDataHex = self.ser.read(4)
         parsedDataHex = binascii.b2a_hex(rawDataHex)
-        parsedDataHex = str(parsedDataHex).split('\'')[1][1]
+        parsedDataHex = str(parsedDataHex).split('\'')[1]
 
-        self.currentState = parsedDataHex
-        return parsedDataHex
+        timeStamp = int(parsedDataHex[4:8], 16) / 1000
+
+
+
+        self.currentState = int(parsedDataHex[1], 16)
+        return self.currentState, timeStamp
 
 if __name__ == "__main__":
     port = input("Please input AngleManager Port: ")
     if port == "":
         port = "com7"
     am = AngleManager(port)
-    print(am.getCurrentState())
-
-    am._sendMessage(am.standUpOrSit)
-    print(am.getCurrentState())
+    am.autoStartWalk()
