@@ -9,6 +9,7 @@ class AngleManager:
         self.currentState = -1
         self.standUpOrSit = bytes([0xAA, 0x55, 0x66, 0x77])
         self.confirm = bytes([0xAA, 0x55, 0x44, 0x77])
+        self.return_ = bytes([0xAA, 0x55, 0x33, 0x77])
         self.walkOrPause = bytes([0xAA, 0x55, 0x55, 0x77])
         self.emergencyStop = bytes([0xAA, 0x55, 0x55, 0x99])
 
@@ -42,6 +43,9 @@ class AngleManager:
         if nowState != state:
             raise AssertionError
 
+    def returnButton(self):
+        self._sendMessage(self.return_)
+
     def standUpOrSitButton(self):
         self._sendMessage(self.standUpOrSit)
 
@@ -69,8 +73,26 @@ class AngleManager:
         self.walkOrPauseButton()
 
     def manualControl(self):
-        # done init
-        pass
+        while 1:
+            key = input("Please input:\n    1 - return\n    2 - confirm\n    3 - walk/pause\n    4 - standUp/sitDown\n    5 - emerengcy stop\n    empty - get current state\nYour input:")
+
+            if key == '1':
+                self.returnButton()
+            elif key == '2':
+                self.confirmButton()
+            elif key == '3':
+                self.walkOrPauseButton()
+            elif key == '4':
+                self.standUpOrSitButton()
+            elif key == '5':
+                self.emergencyStopButton()
+            elif key == '':
+                print('currentState: ', self.getInfo()[0])
+
+            print('\n\n')
+
+
+            
 
 
 
@@ -93,4 +115,4 @@ if __name__ == "__main__":
     if port == "":
         port = "com7"
     am = AngleManager(port)
-    am.autoStartWalk()
+    am.manualControl()
