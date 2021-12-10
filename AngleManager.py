@@ -74,7 +74,7 @@ class AngleManager:
 
     def manualControl(self):
         while 1:
-            key = input("Please input:\n    1 - return\n    2 - confirm\n    3 - walk/pause\n    4 - standUp/sitDown\n    5 - emerengcy stop\n    empty - get current state\nYour input:")
+            key = input("Please input:\n    1 - return\n    2 - confirm\n    3 - walk/pause\n    4 - standUp/sitDown\n    5 - emerengcy stop\n    6 - exit the manual control\n    empty - get current state\nYour input:")
 
             if key == '1':
                 self.returnButton()
@@ -86,17 +86,12 @@ class AngleManager:
                 self.standUpOrSitButton()
             elif key == '5':
                 self.emergencyStopButton()
+            elif key == '6':
+                break
             elif key == '':
                 print('currentState: ', self.getInfo()[0])
 
             print('\n\n')
-
-
-            
-
-
-
-
 
     def getInfo(self):
         rawDataHex = self.ser.read(4)
@@ -104,8 +99,6 @@ class AngleManager:
         parsedDataHex = str(parsedDataHex).split('\'')[1]
 
         timeStamp = int(parsedDataHex[4:8], 16) / 1000
-
-
 
         self.currentState = int(parsedDataHex[1], 16)
         return self.currentState, timeStamp
