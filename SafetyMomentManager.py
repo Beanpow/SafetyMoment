@@ -6,7 +6,7 @@ from MomentManager import MomentManager
 import matplotlib.pyplot as plt
 
 class SafetyMomentManager:
-    def __init__(self, userName, momentManager, angelManager, sampleRate=20, autoPlot = False) -> None:
+    def __init__(self, userName, momentManager, angelManager, sampleRate=20, autoPlot = False):
         '''
         userName:       The User Name
         sampleRate:     Hz, the value must less than 4, because of the momentManager have the limited rate
@@ -22,7 +22,7 @@ class SafetyMomentManager:
 
 
     def GetSafetyMoment(self):
-        path = '/data/' + self.userName + '_Safety.npy'
+        path = './data/' + self.userName + '_Safety.npy'
         if os.path.exists(path):
             choise = input("Found Existing Safety Data, Do you want to load from existing data?[y]/n:")
             if choise == '' or choise == 'y' or choise == 'Y':
@@ -44,10 +44,26 @@ class SafetyMomentManager:
         rawMomentData, rawAngleData = self._RecordRawSafetyMoment()
         assert(len(rawAngleData) == len(rawMomentData))
 
-        # for indx in rawAngleData:
+        combinedData = np.hstack(rawMomentData, rawAngleData)
+        print(combinedData)
+        combinedData = combinedData[combinedData[:, -1].argsort()]
+
+        lastValue = combinedData[0, -1]
+        sumValue = combinedData[0, 0:4].reshape(1,4)
+        avarageSafetyMoment = []
+        for i in range(1, combinedData.shape[0]):
+            if combinedData[i, -1] == lastValue:
+                sumValue = np.vstack((sumValue, combinedData[i, 0:4]))
+            else:
+                avarag = np.sum(sumValue, axis = 0) / sumValue.shape[0]
+                avarageSafetyMoment.append(np.hstack((avarag, lastValue)))
+                lastValue = combinedData[i, -1]
+                sumValue = combinedData[i, 0:4].reshape(1,4)
+        
+        combinedData = np.array(avarageSafetyMoment)
+        print(combinedData)
 
 
-    # TODO
     def _RecordRawSafetyMoment(self):
         '''
         record angle and moment 
@@ -93,7 +109,7 @@ class SafetyMomentManager:
             print("End the Record!")
          
         np.save('rawdata_' + self.userName + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + '.npy', momentData)
-        return momentData, angleData
+        return np.array(momentData), np.array(angleData)
 
 
 if __name__ == "__main__":
@@ -105,7 +121,10 @@ if __name__ == "__main__":
     if momentManagerPort == "":
         momentManagerPort = "com3"
 
-    momentManager = MomentManager(momentManagerPort)
-    angelManager = AngleManager(angleManagerPort)
+    # momentManager = MomentManager(momentManagerPort)
+    # angelManager = AngleManager(angleManagerPort)
+    momentManager = 1
+    angelManager = 2
+    
 
     smm = SafetyMomentManager('hkb', sampleRate=40, autoPlot = True, momentManager = momentManager, angelManager = angelManager)
