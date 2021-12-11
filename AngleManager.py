@@ -101,7 +101,12 @@ class AngleManager:
         timeStamp = int(parsedDataHex[4:8], 16) / 1000
 
         self.currentState = int(parsedDataHex[1], 16)
-        return self.currentState, timeStamp
+
+        successd = 1
+        if timeStamp > 3.1416:
+            successd = 0
+
+        return self.currentState, timeStamp, successd
 
 if __name__ == "__main__":
     port = input("Please input AngleManager Port: ")
