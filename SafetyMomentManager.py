@@ -29,26 +29,28 @@ class SafetyMomentManager:
 
         self.GetSafetyMoment()
 
+    def plotPic(self):
+        '''
+        plot the safety moment data
+        '''
+        color = cm.viridis(0.7)
+        f, ax = plt.subplots(1,1)
+        ax.plot(range(len(self.SafetyMoment[:, 0])), self.SafetyMoment[:, 0], color=color)
+        r1 = list(map(lambda x: x[0]-x[1], zip(self.SafetyMoment[:, 0], self.SafetyMoment[:, 4])))
+        r2 = list(map(lambda x: x[0]+x[1], zip(self.SafetyMoment[:, 0], self.SafetyMoment[:, 4])))
+        ax.fill_between(range(len(self.SafetyMoment[:, 0])), r1, r2, color=color, alpha=0.2)
+        plt.show()
+
+
 
     def GetSafetyMoment(self):
         # path = './data/' + self.userName + '_Safety.npy'
-        path = 'combinedData.npy'
+        path = './data/combinedData.npy'
 
         if os.path.exists(path):
             choise = input("Found Existing Safety Data, Do you want to load from existing data?[y]/n:")
             if choise == '' or choise == 'y' or choise == 'Y':
                 self.SafetyMoment = np.load(path)
-
-
-                color = cm.viridis(0.7)
-                f, ax = plt.subplots(1,1)
-                ax.plot(range(len(self.SafetyMoment[:, 0])), self.SafetyMoment[:, 0], color=color)
-                r1 = list(map(lambda x: x[0]-x[1], zip(self.SafetyMoment[:, 0], self.SafetyMoment[:, 4])))
-                r2 = list(map(lambda x: x[0]+x[1], zip(self.SafetyMoment[:, 0], self.SafetyMoment[:, 4])))
-                ax.fill_between(range(len(self.SafetyMoment[:, 0])), r1, r2, color=color, alpha=0.2)
-                plt.show()
-
-
             else:
                 self.SafetyMoment = self._ProcessRawSafetyMoment()
         
