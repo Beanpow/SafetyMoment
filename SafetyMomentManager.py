@@ -5,6 +5,15 @@ import os
 from MomentManager import MomentManager
 import matplotlib.pyplot as plt
 
+
+import re
+import seaborn as sns
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+import shutil
+import os
+sns.set_style('whitegrid')
+
 class SafetyMomentManager:
     def __init__(self, userName, momentManager, angelManager, sampleRate=20, autoPlot = False):
         '''
@@ -22,11 +31,24 @@ class SafetyMomentManager:
 
 
     def GetSafetyMoment(self):
-        path = './data/' + self.userName + '_Safety.npy'
+        # path = './data/' + self.userName + '_Safety.npy'
+        path = 'combinedData.npy'
+
         if os.path.exists(path):
             choise = input("Found Existing Safety Data, Do you want to load from existing data?[y]/n:")
             if choise == '' or choise == 'y' or choise == 'Y':
                 self.SafetyMoment = np.load(path)
+
+
+                color = cm.viridis(0.7)
+                f, ax = plt.subplots(1,1)
+                ax.plot(range(len(self.SafetyMoment[:, 0])), self.SafetyMoment[:, 0], color=color)
+                r1 = list(map(lambda x: x[0]-x[1], zip(self.SafetyMoment[:, 0], self.SafetyMoment[:, 4])))
+                r2 = list(map(lambda x: x[0]+x[1], zip(self.SafetyMoment[:, 0], self.SafetyMoment[:, 4])))
+                ax.fill_between(range(len(self.SafetyMoment[:, 0])), r1, r2, color=color, alpha=0.2)
+                plt.show()
+
+
             else:
                 self.SafetyMoment = self._ProcessRawSafetyMoment()
         
@@ -40,11 +62,12 @@ class SafetyMomentManager:
         '''
         process raw safety moment data to get the final safety moment data throught Least squares method 
         '''
-        self.angelManager.autoStartWalk()
+        # self.angelManager.autoStartWalk()
         rawMomentData, rawAngleData = self._RecordRawSafetyMoment()
         assert(len(rawAngleData) == len(rawMomentData))
 
-        combinedData = np.hstack(rawMomentData, rawAngleData)
+        rawAngleData = rawAngleData.reshape(rawAngleData.shape[0], 1)
+        combinedData = np.hstack((rawMomentData, rawAngleData))
         print(combinedData)
         combinedData = combinedData[combinedData[:, -1].argsort()]
 
@@ -55,13 +78,15 @@ class SafetyMomentManager:
             if combinedData[i, -1] == lastValue:
                 sumValue = np.vstack((sumValue, combinedData[i, 0:4]))
             else:
-                avarag = np.sum(sumValue, axis = 0) / sumValue.shape[0]
-                avarageSafetyMoment.append(np.hstack((avarag, lastValue)))
+                avarag = np.mean(sumValue, axis=0)
+                var = np.var(sumValue, axis=0)
+                avarageSafetyMoment.append(np.hstack((avarag, var, lastValue)))
                 lastValue = combinedData[i, -1]
                 sumValue = combinedData[i, 0:4].reshape(1,4)
         
         combinedData = np.array(avarageSafetyMoment)
         print(combinedData)
+        np.save('combinedData.npy', combinedData)
 
 
     def _RecordRawSafetyMoment(self):
@@ -74,7 +99,7 @@ class SafetyMomentManager:
 
         timeLong = input("Please input how long you want to record,[60](s):")
         if timeLong == "":
-            timeLong == "60"
+            timeLong = "60"
         timeLong = int(timeLong)
 
         try:
@@ -86,10 +111,13 @@ class SafetyMomentManager:
                     plt.clf()
                 startTime = time.time()
                 moment = self.momentManager.GetAllMoments()
-                angle = self.angelManager.getInfo()
+                angel = self.angelManager.getInfo()
 
-                momentData.append(moment[0])
-                angleData.append(angle[1])
+                if angel[2] == 1:
+                    momentData.append(moment[0])
+                    angleData.append(angel[1])
+                else:
+                    print('angel paresed failed!')
                 
                 endTime = time.time()
                 print(endTime - startTime)
@@ -108,7 +136,7 @@ class SafetyMomentManager:
         except KeyboardInterrupt:
             print("End the Record!")
          
-        np.save('rawdata_' + self.userName + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + '.npy', momentData)
+        np.save('rawdata_' + self.userName + time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime()) + '.npy', momentData)
         return np.array(momentData), np.array(angleData)
 
 
@@ -121,10 +149,10 @@ if __name__ == "__main__":
     if momentManagerPort == "":
         momentManagerPort = "com3"
 
-    # momentManager = MomentManager(momentManagerPort)
-    # angelManager = AngleManager(angleManagerPort)
-    momentManager = 1
-    angelManager = 2
+    momentManager = MomentManager(momentManagerPort)
+    angelManager = AngleManager(angleManagerPort)
+    # momentManager = 1
+    # angelManager = 2
     
 
-    smm = SafetyMomentManager('hkb', sampleRate=40, autoPlot = True, momentManager = momentManager, angelManager = angelManager)
+    smm = SafetyMomentManager('hkb', sampleRate=38, autoPlot = False, momentManager = momentManager, angelManager = angelManager)
