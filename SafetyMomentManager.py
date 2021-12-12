@@ -27,28 +27,89 @@ class SafetyMomentManager:
         self.momentManager = momentManager
         self.angelManager = angelManager
 
-        self.GetSafetyMoment()
+        
+
+    def DetectMoment(self, autoPlot = False):
+        '''
+        detect the moment is safe or not
+        '''
+        momentList = []
+        angelList = []
+        color = cm.viridis(0.7)
+
+        if autoPlot:
+            plt.figure(1)
+        
+        if self.SafetyMoment is None:
+            print("You have not record the raw data, please record the raw data first!")
+            return
+
+        try:
+            while True:
+                if autoPlot:
+                    plt.clf()
+                moment = self.momentManager.GetAllMoments()
+                angel = self.angelManager.getInfo()
+                momentList.append(moment)
+                angelList.append(angel)
+
+                if angel[2] == 1:
+                    checkResult, idx = self.CheckMoment(moment)
+
+                    if autoPlot:
+                        fig, (ax1, ax2), (ax3, ax4) = plt.subplots(2, 2)
+
+                        ax1.plot(range(len(momentList[-50:])), momentList[-50:][0], color=color)
+                        # r1 = list(map(lambda x: x[0]-x[1], zip(self.SafetyMoment[:, 0], self.SafetyMoment[:, 4])))
+                        # r2 = list(map(lambda x: x[0]+x[1], zip(self.SafetyMoment[:, 0], self.SafetyMoment[:, 4])))
+                        # ax.fill_between(range(len(self.SafetyMoment[:, 0])), r1, r2, color=color, alpha=0.2)
+
+                        
+
+                    if not checkResult:
+                        self.angelManager.emergencyStopButton()
+                else:
+                    print('angel paresed failed!')
+        except KeyboardInterrupt:
+            print("Program Terminated!")
+
+    def CheckMoment(self, momentAndAngel):
+        '''
+        check the moment is safe or not
+        '''
+        dangerousRate = 1.2
+        momentAndAngel = momentAndAngel.reshape(1, momentAndAngel.shape[0])
+
+        idx = np.abs(self.SafetyMoment[:, -1] - momentAndAngel[:, -1]).argmin()
+        for i in range(4):
+            if abs(self.SafetyMoment[idx, i] - momentAndAngel[0, i]) > dangerousRate * self.SafetyMoment[idx, 4+i]:
+                return False, idx
+
+        return True, idx
+
+
+    def plotPic(self):
+        '''
+        plot the safety moment data
+        '''
+        color = cm.viridis(0.7)
+        f, ax = plt.subplots(1,1)
+        ax.plot(range(len(self.SafetyMoment[:, 0])), self.SafetyMoment[:, 0], color=color)
+        r1 = list(map(lambda x: x[0]-x[1], zip(self.SafetyMoment[:, 0], self.SafetyMoment[:, 4])))
+        r2 = list(map(lambda x: x[0]+x[1], zip(self.SafetyMoment[:, 0], self.SafetyMoment[:, 4])))
+        ax.fill_between(range(len(self.SafetyMoment[:, 0])), r1, r2, color=color, alpha=0.2)
+        plt.show()
+
 
 
     def GetSafetyMoment(self):
         # path = './data/' + self.userName + '_Safety.npy'
-        path = 'combinedData.npy'
+        path = './data/combinedData.npy'
 
         if os.path.exists(path):
             choise = input("Found Existing Safety Data, Do you want to load from existing data?[y]/n:")
             if choise == '' or choise == 'y' or choise == 'Y':
                 self.SafetyMoment = np.load(path)
-
-
-                color = cm.viridis(0.7)
-                f, ax = plt.subplots(1,1)
-                ax.plot(range(len(self.SafetyMoment[:, 0])), self.SafetyMoment[:, 0], color=color)
-                r1 = list(map(lambda x: x[0]-x[1], zip(self.SafetyMoment[:, 0], self.SafetyMoment[:, 4])))
-                r2 = list(map(lambda x: x[0]+x[1], zip(self.SafetyMoment[:, 0], self.SafetyMoment[:, 4])))
-                ax.fill_between(range(len(self.SafetyMoment[:, 0])), r1, r2, color=color, alpha=0.2)
-                plt.show()
-
-
             else:
                 self.SafetyMoment = self._ProcessRawSafetyMoment()
         
@@ -156,3 +217,5 @@ if __name__ == "__main__":
     
 
     smm = SafetyMomentManager('hkb', sampleRate=38, autoPlot = False, momentManager = momentManager, angelManager = angelManager)
+    smm.GetSafetyMoment()
+    smm.DetectMoment(autoPlot = True)
