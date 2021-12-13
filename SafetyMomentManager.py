@@ -5,13 +5,12 @@ import os
 from MomentManager import MomentManager
 import matplotlib.pyplot as plt
 
-
-import re
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
-import shutil
 import os
+
+import scipy.signal
 sns.set_style('whitegrid')
 
 class SafetyMomentManager:
@@ -33,12 +32,14 @@ class SafetyMomentManager:
         '''
         detect the moment is safe or not
         '''
-        momentList = []
         angelList = []
+        momentList = None
         color = cm.viridis(0.7)
+        xRangeConst = 50
+        xRange = 50
 
         if autoPlot:
-            plt.figure(1)
+            fig = plt.figure(1)
         
         if self.SafetyMoment is None:
             print("You have not record the raw data, please record the raw data first!")
@@ -47,27 +48,38 @@ class SafetyMomentManager:
         try:
             while True:
                 if autoPlot:
-                    plt.clf()
-                moment = self.momentManager.GetAllMoments()
+                    fig.clf()
+                    ax1 = fig.add_subplot(221)
+                moment = self.momentManager.GetAllMoments()[0]
                 angel = self.angelManager.getInfo()
-                momentList.append(moment)
-                angelList.append(angel)
+
 
                 if angel[2] == 1:
-                    checkResult, idx = self.CheckMoment(moment)
+                    checkResult, idx = self.CheckMoment(np.hstack((moment, angel[1])))
+
+                    if type(momentList) != type(np.array([[1,2,3,4]])):
+                        momentList = np.array(np.hstack((moment, self.SafetyMoment[idx, 0:8]))).reshape(1, 12)
+                    else:
+                        momentList = np.vstack((momentList, np.hstack((moment, self.SafetyMoment[idx, 0:8]))))
+                    angelList.append(angel[1])
 
                     if autoPlot:
-                        fig, (ax1, ax2), (ax3, ax4) = plt.subplots(2, 2)
 
-                        ax1.plot(range(len(momentList[-50:])), momentList[-50:][0], color=color)
-                        # r1 = list(map(lambda x: x[0]-x[1], zip(self.SafetyMoment[:, 0], self.SafetyMoment[:, 4])))
-                        # r2 = list(map(lambda x: x[0]+x[1], zip(self.SafetyMoment[:, 0], self.SafetyMoment[:, 4])))
-                        # ax.fill_between(range(len(self.SafetyMoment[:, 0])), r1, r2, color=color, alpha=0.2)
+                        xRange = momentList.shape[0] if momentList.shape[0] <= xRangeConst else xRangeConst
+                        
+                        
+                        # print(type(momentList[-xRange:, 0]),momentList[-xRange:, 0])
+                        ax1.plot(range(momentList[-xRange:, 0].shape[0]), momentList[-xRange:, 0], color=color)
+                        r1 = list(map(lambda x: x[0]-x[1], zip(momentList[-xRange:, 4], momentList[-xRange:, 8])))
+                        r2 = list(map(lambda x: x[0]+x[1], zip(momentList[-xRange:, 4], momentList[-xRange:, 8])))
+                        ax1.fill_between(range(momentList[-xRange:, 0].shape[0]), r1, r2, color=color, alpha=0.2)
+                        plt.pause(0.01)
+
 
                         
 
-                    if not checkResult:
-                        self.angelManager.emergencyStopButton()
+                    # if not checkResult:
+                        # self.angelManager.emergencyStopButton()
                 else:
                     print('angel paresed failed!')
         except KeyboardInterrupt:
@@ -77,7 +89,7 @@ class SafetyMomentManager:
         '''
         check the moment is safe or not
         '''
-        dangerousRate = 1.2
+        dangerousRate = 3
         momentAndAngel = momentAndAngel.reshape(1, momentAndAngel.shape[0])
 
         idx = np.abs(self.SafetyMoment[:, -1] - momentAndAngel[:, -1]).argmin()
@@ -101,7 +113,7 @@ class SafetyMomentManager:
         plt.show()
 
 
-
+    # TODO: maybe the 5 should changed 
     def GetSafetyMoment(self):
         # path = './data/' + self.userName + '_Safety.npy'
         path = './data/combinedData.npy'
@@ -110,6 +122,15 @@ class SafetyMomentManager:
             choise = input("Found Existing Safety Data, Do you want to load from existing data?[y]/n:")
             if choise == '' or choise == 'y' or choise == 'Y':
                 self.SafetyMoment = np.load(path)
+
+                for i in range(1, self.SafetyMoment.shape[0]):
+                    for j in range(4):
+                        if self.SafetyMoment[i, 4+j] < 5:
+                            self.SafetyMoment[i, 4+j] = self.SafetyMoment[i - 1, 4+j]
+                            # self.SafetyMoment[i, 4+j] = 5
+                
+                # scipy.signal.savgol_filter(self.SafetyMoment, )
+
             else:
                 self.SafetyMoment = self._ProcessRawSafetyMoment()
         
@@ -140,7 +161,7 @@ class SafetyMomentManager:
                 sumValue = np.vstack((sumValue, combinedData[i, 0:4]))
             else:
                 avarag = np.mean(sumValue, axis=0)
-                var = np.var(sumValue, axis=0)
+                var = np.std(sumValue, axis=0)
                 avarageSafetyMoment.append(np.hstack((avarag, var, lastValue)))
                 lastValue = combinedData[i, -1]
                 sumValue = combinedData[i, 0:4].reshape(1,4)
@@ -148,6 +169,7 @@ class SafetyMomentManager:
         combinedData = np.array(avarageSafetyMoment)
         print(combinedData)
         np.save('combinedData.npy', combinedData)
+        return combinedData
 
 
     def _RecordRawSafetyMoment(self):
@@ -181,7 +203,7 @@ class SafetyMomentManager:
                     print('angel paresed failed!')
                 
                 endTime = time.time()
-                print(endTime - startTime)
+                
                 assert(endTime - startTime <= timeDuration)
 
                 # print('time stop: ', timeDuration - (endTime - startTime))
@@ -193,6 +215,7 @@ class SafetyMomentManager:
                 
                 if time.time() - recordStartTime > timeLong:
                     break
+                print(endTime - startTime, 'remain ', timeLong - time.time() + recordStartTime)
 
         except KeyboardInterrupt:
             print("End the Record!")
@@ -218,4 +241,6 @@ if __name__ == "__main__":
 
     smm = SafetyMomentManager('hkb', sampleRate=38, autoPlot = False, momentManager = momentManager, angelManager = angelManager)
     smm.GetSafetyMoment()
+    smm.plotPic()
+    # angelManager.autoStartWalk()
     smm.DetectMoment(autoPlot = True)
