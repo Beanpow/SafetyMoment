@@ -2,6 +2,7 @@ import serial
 import time
 import binascii
 import sys
+import numpy as np
 
 class MomentManager:
     def __init__(self, port='com3', byterate=38400, timeout=10) -> None:
@@ -104,7 +105,7 @@ class MomentManager:
                 momentList[i] =  momentList[i] - 4294967296
             momentList[i] /= 100
 
-        return momentList, [1,2,3,4], parsedDataHex
+        return np.array(momentList), [1,2,3,4], parsedDataHex
 
 if __name__ == "__main__":
     m = MomentManager()
