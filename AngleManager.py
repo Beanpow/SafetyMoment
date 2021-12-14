@@ -1,10 +1,11 @@
 import serial
 import sys
 import binascii
+import struct
 
 class AngleManager:
     # TODO
-    def __init__(self, port, byterate=115200, timeout=0.5) -> None:
+    def __init__(self, port, byterate=115200, timeout=0.01) -> None:
         self.req = ""
         self.currentState = -1
         self.standUpOrSit = bytes([0xAA, 0x55, 0x66, 0x77])
@@ -92,25 +93,43 @@ class AngleManager:
                 print('currentState: ', self.getInfo()[0])
 
             print('\n\n')
+            
+    def _char2float(self, charList):
+        hex = ['0x' + charList[6:8], '0x' + charList[4:6], '0x' + charList[2:4], '0x' + charList[0:2]]
+        hex = [int(i, 16) for i in hex]
+        
+        return struct.unpack(">f", bytes(hex))[0]
 
     def getInfo(self):
-        rawDataHex = self.ser.read(4)
+        rawDataHex = self.ser.read(100)
         parsedDataHex = binascii.b2a_hex(rawDataHex)
-        parsedDataHex = str(parsedDataHex).split('\'')[1]
-
-        timeStamp = int(parsedDataHex[4:8], 16) / 1000
-
-        self.currentState = int(parsedDataHex[1], 16)
+        
+        parsedDataHex = str(parsedDataHex).split('24')
+        flag = 0
+        for i in parsedDataHex:
+            if len(i.split('19')[0]) == 48:
+                parsedDataHex = i.split('19')[0]
+                flag = 1
+                break
+        # parsedDataHex = str(parsedDataHex).split('\'')[1]
+        # print(parsedDataHex)
+        if flag == 0:
+            return -1, 0, 0, 0
+    
+        timeStamp = self._char2float(parsedDataHex[-16:-8])
+        self.currentState = int(self._char2float(parsedDataHex[-8:]))
 
         successd = 1
-        if timeStamp > 2.5:
+        if timeStamp > 3 or timeStamp < 0:
             successd = 0
 
-        return self.currentState, timeStamp, successd
+        return self.currentState, timeStamp, successd, parsedDataHex
 
 if __name__ == "__main__":
     port = input("Please input AngleManager Port: ")
     if port == "":
-        port = "com7"
+        port = "com3"
     am = AngleManager(port)
-    am.manualControl()
+    angleList = []
+    print(am.getInfo())
+        
