@@ -254,7 +254,7 @@ class SafetyMomentManager:
                     momentData.append(moment[0])
                     angleData.append(angel[1])
                 else:
-                    print('angel paresed failed!')
+                    print('angel paresed failed!', angel)
                 
                 endTime = time.time()
                 
@@ -269,7 +269,7 @@ class SafetyMomentManager:
                 
                 if time.time() - recordStartTime > timeLong:
                     break
-                print(endTime - startTime, 'remain ', timeLong - time.time() + recordStartTime)
+                print("used %.3f, remains: %.3f"%( endTime - startTime, timeLong - time.time() + recordStartTime))
 
         except KeyboardInterrupt:
             print("End the Record!")
@@ -281,11 +281,11 @@ class SafetyMomentManager:
 if __name__ == "__main__":
     angleManagerPort = input("Please input angel manager port (like \"com8\"): ")
     if angleManagerPort == "":
-        angleManagerPort = "com8"
+        angleManagerPort = "com3"
         
     momentManagerPort = input("Please input moment manager port (like \"com3\"): ")
     if momentManagerPort == "":
-        momentManagerPort = "com3"
+        momentManagerPort = "com4"
 
     momentManager = MomentManager(momentManagerPort)
     angelManager = AngleManager(angleManagerPort)
