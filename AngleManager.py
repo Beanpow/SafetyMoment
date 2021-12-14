@@ -103,7 +103,7 @@ class AngleManager:
         self.currentState = int(parsedDataHex[1], 16)
 
         successd = 1
-        if timeStamp > 3.1416:
+        if timeStamp > 2.5:
             successd = 0
 
         return self.currentState, timeStamp, successd
