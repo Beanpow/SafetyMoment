@@ -2,6 +2,8 @@ import serial
 import sys
 import binascii
 import struct
+import threading
+import time
 
 class AngleManager:
     # TODO
@@ -19,10 +21,16 @@ class AngleManager:
         except Exception as e:
             print(e)
             sys.exit()
-
+            
+        self.isStartSave = 1
+        self.thread = threading.Thread(target=self.SaveInfo)
+        self.thread.start()
+        
     def __del__(self):
+        self.isStartSave = 0
+        self.thread.join()
         self.ser.close()
-
+        
     def _sendMessage(self, req):
         self.ser.write(req)
 
@@ -99,9 +107,20 @@ class AngleManager:
         hex = [int(i, 16) for i in hex]
         
         return struct.unpack(">f", bytes(hex))[0]
+    
+    def SaveInfo(self):
+        self.stack = []
+        stackSize = 1000
+        while(self.isStartSave):
+            if self.ser.inWaiting():
+                self.stack += self.ser.read_all()
+                if len(self.stack) > stackSize:
+                    self.stack = self.stack[-stackSize:]
 
     def getInfo(self):
-        rawDataHex = self.ser.read(100)
+        # rawDataHex = self.ser.read(100)
+        rawDataHex = bytes(self.stack)[-400:]
+        
         parsedDataHex = binascii.b2a_hex(rawDataHex)
         
         parsedDataHex = str(parsedDataHex).split('24')
