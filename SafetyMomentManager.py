@@ -33,19 +33,15 @@ class SafetyMomentManager:
 
         
 
-    def DetectMoment(self, autoPlot = False):
+    def DetectMoment(self):
         '''
         detect the moment is safe or not
         '''
         angelList = []
         momentList = None
-        color = cm.viridis(0.7)
-        xRangeConst = 50
-        xRange = 50
         idxList = []
+        indx = 0
 
-        if autoPlot:
-            fig = plt.figure(1)
         
         if self.SafetyMoment is None:
             print("You have not record the raw data, please record the raw data first!")
@@ -54,15 +50,13 @@ class SafetyMomentManager:
         try:
             print('detecting...')
             while True:
-                if autoPlot:
-                    fig.clf()
-                    ax1 = fig.add_subplot(221)
+                indx += 1
                 moment = self.momentManager.GetAllMoments()[0]
                 angel = self.angelManager.getInfo()
 
 
                 if angel[2] == 1:
-                    checkResult, idx = self.SimpleCheckMoment(np.hstack((moment, angel[1])))
+                    checkResult, idx = self.CheckMoment(np.hstack((moment, angel[1])))
                     idxList.append(idx)
 
                     if type(momentList) != type(np.array([[1,2,3,4]])):
@@ -71,44 +65,30 @@ class SafetyMomentManager:
                         momentList = np.vstack((momentList, np.hstack((moment, self.SafetyMoment[idx, 0:8]))))
                     angelList.append(angel[1])
 
-                    if autoPlot:
-
-                        xRange = momentList.shape[0] if momentList.shape[0] <= xRangeConst else xRangeConst
-                        
-                        
-                        # print(type(momentList[-xRange:, 0]),momentList[-xRange:, 0])
-                        # ax1.plot(range(momentList[-xRange:, 0].shape[0]), momentList[-xRange:, 0], color=color)
-                        # r1 = list(map(lambda x: x[0]-3*x[1], zip(momentList[-xRange:, 4], momentList[-xRange:, 8])))
-                        # r2 = list(map(lambda x: x[0]+3*x[1], zip(momentList[-xRange:, 4], momentList[-xRange:, 8])))
-                        # ax1.fill_between(range(momentList[-xRange:, 0].shape[0]), r1, r2, color=color, alpha=0.2)
-                        # plt.pause(0.01)
-
-
-                        
 
                     if not checkResult:
-                        self.angelManager.emergencyStopButton()
+                        # self.angelManager.emergencyStopButton()
                         print('Emergency Stop!')
-                        return
+                        # return
                 else:
                     print('angel paresed failed!')
+                
+                if indx > 500:
+                    plt.plot(momentList[:, 0])
+                    plt.plot(momentList[:, 4])
+                    # plt.fill_between(range(len(momentList[:, 0])), momentList[:, 4] + momentList[:, 8], momentList[:, 4] - momentList[:, 8])
+                    plt.plot(momentList[:, 4] + 3.5 * momentList[:, 8])
+                    plt.plot(momentList[:, 4] - 3.5 * momentList[:, 8])
+                    plt.show()
         except KeyboardInterrupt:
             print("Program Terminated!")
-            fig = plt.figure(1)
-            xRange = momentList.shape[0] if momentList.shape[0] <= xRangeConst else xRangeConst
-            ax1 = fig.add_subplot(111)
-            ax1.plot(range(momentList[-xRange:, 0].shape[0]), momentList[-xRange:, 0], color=color)
-            r1 = list(map(lambda x: x[0]-3*x[1], zip(momentList[-xRange:, 4], momentList[-xRange:, 8])))
-            r2 = list(map(lambda x: x[0]+3*x[1], zip(momentList[-xRange:, 4], momentList[-xRange:, 8])))
-            ax1.fill_between(range(momentList[-xRange:, 0].shape[0]), r1, r2, color=color, alpha=0.2)
-            plt.plot()
-            plt.show()
+
 
     def CheckMoment(self, momentAndAngel):
         '''
         check the moment is safe or not
         '''
-        dangerousRate = 3
+        dangerousRate = 3.5
         momentAndAngel = momentAndAngel.reshape(1, momentAndAngel.shape[0])
 
         idx = np.abs(self.SafetyMoment[:, -1] - momentAndAngel[:, -1]).argmin()
@@ -210,8 +190,6 @@ class SafetyMomentManager:
         
         combinedData = np.array(avarageSafetyMoment)
 
-        self.SafetyMoment = combinedData
-        self.plotPic()
 
         for i in range(1, combinedData.shape[0]):
             for j in range(4):
@@ -297,4 +275,4 @@ if __name__ == "__main__":
     # angelManager.autoStartWalk()
     smm.GetSafetyMoment()
     smm.plotPic()
-    smm.DetectMoment(autoPlot = True)
+    smm.DetectMoment()
