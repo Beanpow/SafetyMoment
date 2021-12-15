@@ -14,7 +14,7 @@ import scipy.signal
 sns.set_style('whitegrid')
 
 class SafetyMomentManager:
-    def __init__(self, userName, momentManager, angelManager, sampleRate=20, autoPlot = False, savePath = './data'):
+    def __init__(self, userName, momentManager, angelManager, sampleRate=20, autoPlot = False, savePath = './data', safetyRate = 3.5):
         '''
         userName:       The User Name
         sampleRate:     Hz, the value must less than 4, because of the momentManager have the limited rate
@@ -27,6 +27,8 @@ class SafetyMomentManager:
         self.angelManager = angelManager
 
         self.savaPath = savePath
+        
+        self.safetyRate = safetyRate
 
         self.minMoment = np.array([-10000, -10000, -10000, -10000])
         self.maxMoment = np.array([10000, 10000, 10000, 10000, ])
@@ -74,11 +76,11 @@ class SafetyMomentManager:
                     print('angel paresed failed!')
                 
                 if indx > 500:
+                    color = cm.viridis(0.7)
                     plt.plot(momentList[:, 0])
-                    plt.plot(momentList[:, 4])
-                    # plt.fill_between(range(len(momentList[:, 0])), momentList[:, 4] + momentList[:, 8], momentList[:, 4] - momentList[:, 8])
-                    plt.plot(momentList[:, 4] + 3.5 * momentList[:, 8])
-                    plt.plot(momentList[:, 4] - 3.5 * momentList[:, 8])
+                    plt.plot(momentList[:, 4], color = color)
+                    plt.fill_between(range(len(momentList[:, 0])), momentList[:, 4] + self.safetyRate * momentList[:, 8], momentList[:, 4] - self.safetyRate * momentList[:, 8], color=color, alpha=0.2)
+
                     plt.show()
         except KeyboardInterrupt:
             print("Program Terminated!")
@@ -88,12 +90,11 @@ class SafetyMomentManager:
         '''
         check the moment is safe or not
         '''
-        dangerousRate = 3.5
         momentAndAngel = momentAndAngel.reshape(1, momentAndAngel.shape[0])
 
         idx = np.abs(self.SafetyMoment[:, -1] - momentAndAngel[:, -1]).argmin()
         for i in range(4):
-            if abs(self.SafetyMoment[idx, i] - momentAndAngel[0, i]) > dangerousRate * self.SafetyMoment[idx, 4+i]:
+            if abs(self.SafetyMoment[idx, i] - momentAndAngel[0, i]) > self.safetyRate * self.SafetyMoment[idx, 4+i]:
                 return False, idx
 
         return True, idx
@@ -271,8 +272,15 @@ if __name__ == "__main__":
     # angelManager = 2
     
 
-    smm = SafetyMomentManager('hkb', sampleRate=35, autoPlot = False, momentManager = momentManager, angelManager = angelManager)
+    smm = SafetyMomentManager(
+        'hkb',
+        sampleRate=35,
+        autoPlot = False,
+        momentManager = momentManager,
+        angelManager = angelManager,
+        safetyRate=3
+        )
     # angelManager.autoStartWalk()
     smm.GetSafetyMoment()
-    smm.plotPic()
+    # smm.plotPic()
     smm.DetectMoment()
