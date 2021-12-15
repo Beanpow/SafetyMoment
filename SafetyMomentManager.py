@@ -71,17 +71,12 @@ class SafetyMomentManager:
                     if not checkResult:
                         # self.angelManager.emergencyStopButton()
                         print('Emergency Stop!')
-                        # return
+                        self.plotMomentList(momentList[-400:])
+                        return
                 else:
                     print('angel paresed failed!')
                 
-                if indx > 500:
-                    color = cm.viridis(0.7)
-                    plt.plot(momentList[:, 0])
-                    plt.plot(momentList[:, 4], color = color)
-                    plt.fill_between(range(len(momentList[:, 0])), momentList[:, 4] + self.safetyRate * momentList[:, 8], momentList[:, 4] - self.safetyRate * momentList[:, 8], color=color, alpha=0.2)
 
-                    plt.show()
         except KeyboardInterrupt:
             print("Program Terminated!")
 
@@ -113,7 +108,35 @@ class SafetyMomentManager:
         return True, 0
 
             
+    def plotMomentList(self, momentList):
+        color = cm.viridis(0.7)
+        
+        plt.subplot(221)
+        plt.plot(momentList[:, 0])
+        plt.plot(momentList[:, 4], color = color)
+        plt.fill_between(range(len(momentList[:, 0])), momentList[:, 4] + self.safetyRate * momentList[:, 8], momentList[:, 4] - self.safetyRate * momentList[:, 8], color=color, alpha=0.2)
+        plt.title('left hip')
 
+        plt.subplot(223)
+        plt.plot(momentList[:, 1])
+        plt.plot(momentList[:, 5], color = color)
+        plt.fill_between(range(len(momentList[:, 0])), momentList[:, 5] + self.safetyRate * momentList[:, 9], momentList[:, 5] - self.safetyRate * momentList[:, 9], color=color, alpha=0.2)
+        plt.title('left knee')
+        
+        plt.subplot(222)
+        plt.plot(momentList[:, 2])
+        plt.plot(momentList[:, 6], color = color)
+        plt.fill_between(range(len(momentList[:, 0])), momentList[:, 6] + self.safetyRate * momentList[:, 10], momentList[:, 6] - self.safetyRate * momentList[:, 10], color=color, alpha=0.2)
+        plt.title('right hip')
+        
+        plt.subplot(224)
+        plt.plot(momentList[:, 3])
+        plt.plot(momentList[:, 7], color = color)
+        plt.fill_between(range(len(momentList[:, 0])), momentList[:, 7] + self.safetyRate * momentList[:, 11], momentList[:, 7] - self.safetyRate * momentList[:, 11], color=color, alpha=0.2)
+        plt.title('right knee')
+        
+        
+        plt.show()
 
 
 
