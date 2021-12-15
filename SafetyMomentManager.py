@@ -69,10 +69,10 @@ class SafetyMomentManager:
 
 
                     if not checkResult:
-                        # self.angelManager.emergencyStopButton()
+                        self.angelManager.emergencyStopButton()
                         print('Emergency Stop!')
                         self.plotMomentList(momentList[-400:])
-                        return
+                        # return
                 else:
                     print('angel paresed failed!')
                 
@@ -217,9 +217,9 @@ class SafetyMomentManager:
 
         for i in range(1, combinedData.shape[0]):
             for j in range(4):
-                if combinedData[i, 4+j] < 2:
+                if combinedData[i, 4+j] < 4:
                     # self.SafetyMoment[i, 4+j] = self.SafetyMoment[i - 1, 4+j]
-                    combinedData[i, 4+j] = 2
+                    combinedData[i, 4+j] = 4
         for i in range(8):
             combinedData[:, i] = scipy.signal.savgol_filter(combinedData[:, i], 51, 3)
 
@@ -301,7 +301,7 @@ if __name__ == "__main__":
         autoPlot = False,
         momentManager = momentManager,
         angelManager = angelManager,
-        safetyRate=3
+        safetyRate=4
         )
     # angelManager.autoStartWalk()
     smm.GetSafetyMoment()
