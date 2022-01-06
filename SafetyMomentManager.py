@@ -72,6 +72,7 @@ class SafetyMomentManager:
                         self.angelManager.emergencyStopButton()
                         print('Emergency Stop!')
                         self.plotMomentList(momentList[-400:])
+                        break
                         # return
                 else:
                     print('angel paresed failed!')
@@ -79,7 +80,11 @@ class SafetyMomentManager:
 
         except KeyboardInterrupt:
             print("Program Terminated!")
-
+        finally:
+            angelList = np.array(angelList)
+            angelList = np.reshape(angelList, (len(angelList), 1))
+            print(momentList.shape, angelList.shape)
+            np.save('./data/detect_' + self.userName + time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime()) + '.npy', np.hstack((momentList, angelList)))
 
     def CheckMoment(self, momentAndAngel):
         '''
@@ -276,7 +281,7 @@ class SafetyMomentManager:
         except KeyboardInterrupt:
             print("End the Record!")
          
-        np.save('rawdata_' + self.userName + time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime()) + '.npy', momentData)
+        np.save('rawdata_' + self.userName + time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime()) + '.npy', momentData, angleData)
         return np.array(momentData), np.array(angleData)
 
 
@@ -296,14 +301,14 @@ if __name__ == "__main__":
     
 
     smm = SafetyMomentManager(
-        'hkb',
+        'dyj',
         sampleRate=35,
         autoPlot = False,
         momentManager = momentManager,
         angelManager = angelManager,
         safetyRate=4
         )
-    # angelManager.autoStartWalk()
+    angelManager.autoStartWalk()
     smm.GetSafetyMoment()
     # smm.plotPic()
     smm.DetectMoment()
