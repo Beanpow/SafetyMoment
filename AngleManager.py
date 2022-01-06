@@ -24,6 +24,7 @@ class AngleManager:
             
         self.isStartSave = 1
         self.thread = threading.Thread(target=self.SaveInfo)
+        self.thread.setDaemon(True)
         self.thread.start()
         
     def __del__(self):
