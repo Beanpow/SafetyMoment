@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import copy
 
-a = np.load('data/key_data/detect_dyj2022-01-06_16-52-11.npy')
+a = np.load('./data/key_data/1-11/detect_dyj2022-01-11_16-34-39.npy')
 
 
 rawMomentData, rawAngleData = a[:, 0:4], a[:, -1] 
@@ -139,8 +139,8 @@ ax3.set_ylabel('Torque (N·m)')
 
 
 
-a = np.load('data/rawdata_zch2021-12-12_13-29-25.npy')
-a = a[:,:10000]
+a = np.load('./data/key_data/1-12/detect_hkb2022-01-12_16-56-02.npy')
+a = a[:,:2500]
 
 
 rawMomentData, rawAngleData = a[:, 0:4], a[:, -1] 
@@ -176,13 +176,15 @@ print(combinedData.shape)
 #         if combinedData[i, 4+j] < 4:
 #             # combinedData[i, 4+j] = combinedData[i - 1, 4+j]
 #             combinedData[i, 4+j] = 4
-for i in range(8):
-    combinedData[:, i] = scipy.signal.savgol_filter(combinedData[:, i], 51, 3)
+# for i in range(8):
+#     combinedData[:, i] = scipy.signal.savgol_filter(combinedData[:, i], 51, 3)
 
 
 
 color = cm.viridis(0.7)
 key_item = 1
+combinedData[:, key_item] = scipy.signal.savgol_filter(combinedData[:, key_item], 51, 3)
+combinedData[:, key_item + 4] = scipy.signal.savgol_filter(combinedData[:, key_item + 4], 51, 3)
 ax2.plot(range(len(combinedData[:, key_item])), combinedData[:, key_item], color=color)
 r1 = list(map(lambda x: x[0]-3 * x[1], zip(combinedData[:, key_item], combinedData[:, key_item + 4])))
 r2 = list(map(lambda x: x[0]+2 * x[1], zip(combinedData[:, key_item], combinedData[:, key_item + 4])))
@@ -197,13 +199,20 @@ key_item = 3
 # combinedData[:, key_item] = np.array(temp)
 
 
-temp = copy.copy(combinedData[:len(combinedData) // 2, key_item ])
-combinedData[:len(combinedData) // 2, key_item ] = combinedData[len(combinedData) // 2:, key_item ]
-combinedData[len(combinedData) // 2:, key_item ] = temp
+temp1 = copy.copy(combinedData[:len(combinedData) // 2, key_item ])
+temp2 = copy.copy(combinedData[len(combinedData) // 2:, key_item ])
+combinedData[:, key_item] = np.hstack((temp2, temp1))
 
-temp = copy.copy(combinedData[:len(combinedData) // 2, key_item + 4])
-combinedData[:len(combinedData) // 2, key_item + 4 ] = combinedData[len(combinedData) // 2:, key_item + 4]
-combinedData[len(combinedData) // 2:, key_item + 4] = temp
+temp1 = copy.copy(combinedData[:len(combinedData) // 2, key_item + 4 ])
+temp2 = copy.copy(combinedData[len(combinedData) // 2:, key_item + 4 ])
+combinedData[:, key_item + 4] = np.hstack((temp2, temp1))
+
+combinedData[:, key_item] = scipy.signal.savgol_filter(combinedData[:, key_item], 51, 3)
+combinedData[:, key_item + 4] = scipy.signal.savgol_filter(combinedData[:, key_item + 4], 51, 3)
+
+# temp = copy.copy(combinedData[:len(combinedData) // 2, key_item + 4])
+# combinedData[:len(combinedData) // 2, key_item + 4 ] = combinedData[len(combinedData) // 2:, key_item + 4]
+# combinedData[len(combinedData) // 2:, key_item + 4] = temp
 
 # combinedData[len(combinedData) // 2:, key_item ], combinedData[:len(combinedData) // 2, key_item ]  = combinedData[:len(combinedData) // 2, key_item ] ,combinedData[len(combinedData) // 2:, key_item ]
 # combinedData[len(combinedData) // 2:, key_item + 4], combinedData[:len(combinedData) // 2, key_item  + 4]  = combinedData[:len(combinedData) // 2, key_item  + 4] ,combinedData[len(combinedData) // 2:, key_item  + 4]
@@ -219,6 +228,8 @@ ax2.set_title('Healthy People Torque')
 
 
 key_item = 0
+combinedData[:, key_item] = scipy.signal.savgol_filter(combinedData[:, key_item], 51, 3)
+combinedData[:, key_item + 4] = scipy.signal.savgol_filter(combinedData[:, key_item + 4], 51, 3)
 ax4.plot(range(len(combinedData[:, key_item])), combinedData[:, key_item], color=color)
 r1 = list(map(lambda x: x[0]-3 * x[1], zip(combinedData[:, key_item], combinedData[:, key_item + 4])))
 r2 = list(map(lambda x: x[0]+2 * x[1], zip(combinedData[:, key_item], combinedData[:, key_item + 4])))
@@ -233,13 +244,16 @@ key_item = 2
 # combinedData[:, key_item] = np.array(temp)
 
 
-temp = copy.copy(combinedData[:len(combinedData) // 2, key_item ])
-combinedData[:len(combinedData) // 2, key_item ] = combinedData[len(combinedData) // 2:, key_item ]
-combinedData[len(combinedData) // 2:, key_item ] = temp
+temp1 = copy.copy(combinedData[:len(combinedData) // 2, key_item ])
+temp2 = copy.copy(combinedData[len(combinedData) // 2:, key_item ])
+combinedData[:, key_item] = np.hstack((temp2, temp1))
 
-temp = copy.copy(combinedData[:len(combinedData) // 2, key_item + 4])
-combinedData[:len(combinedData) // 2, key_item + 4 ] = combinedData[len(combinedData) // 2:, key_item + 4]
-combinedData[len(combinedData) // 2:, key_item + 4] = temp
+temp1 = copy.copy(combinedData[:len(combinedData) // 2, key_item + 4 ])
+temp2 = copy.copy(combinedData[len(combinedData) // 2:, key_item + 4 ])
+combinedData[:, key_item + 4] = np.hstack((temp2, temp1))
+
+combinedData[:, key_item] = scipy.signal.savgol_filter(combinedData[:, key_item], 51, 3)
+combinedData[:, key_item + 4] = scipy.signal.savgol_filter(combinedData[:, key_item + 4], 51, 3)
 
 # combinedData[len(combinedData) // 2:, key_item ], combinedData[:len(combinedData) // 2, key_item ]  = combinedData[:len(combinedData) // 2, key_item ] ,combinedData[len(combinedData) // 2:, key_item ]
 # combinedData[len(combinedData) // 2:, key_item + 4], combinedData[:len(combinedData) // 2, key_item  + 4]  = combinedData[:len(combinedData) // 2, key_item  + 4] ,combinedData[len(combinedData) // 2:, key_item  + 4]
