@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import random
 import time
-from multiprocessing import Pipe, Process
+from multiprocessing import Pipe, Process, Value
 import matplotlib
 
 matplotlib.use('Qt5Agg') 
@@ -12,13 +12,12 @@ class MutliprocessPlot():
     def __init__(self, conn, drawSize = 100, bound = [-100, 200]) -> None:
         self.conn = conn
 
-        self.p = Process(target=self.DrawPic)
-        self.p.daemon = True
-
         self.drawSize = drawSize
-        self.isDraw = False
         self.bound = bound
+        self.isDraw = Value('i', 0)
 
+        self.p = Process(target=self.DrawPic, args=(self.isDraw, ))
+        self.p.daemon = True
         
 
     def initFig(self):
@@ -40,13 +39,13 @@ class MutliprocessPlot():
         plt.ioff()
 
     def SetStatus(self, status):
-        self.isDraw = status
+        self.isDraw.value = status
 
     def Start(self):
         self.p.start()
 
 
-    def DrawPic(self):
+    def DrawPic(self, isDraw):
         self.initFig()
         data = np.array([]).reshape(0,3)
         
@@ -72,7 +71,7 @@ class MutliprocessPlot():
 
         plt.show(block=False)
 
-        while self.isDraw:
+        while isDraw.value:
             temp = self.conn.recv()
             data = np.vstack((data, temp))
 
@@ -129,12 +128,21 @@ def main():
     main_conn, plot_conn = Pipe()
 
     t = MutliprocessPlot(plot_conn)
-    t.SetStatus(True)
+    t.SetStatus(1)
     t.Start()
 
-    while True:
-        Update(main_conn)
+    try:
+        indx = 0
+        while indx < 500:
+            indx += 1
+            Update(main_conn)
 
+        t.SetStatus(0)
+    except KeyboardInterrupt:
+        # t.SetStatus(0)
+        t.p.join()
+        plt.close()
+        print('close')
 
 if __name__ == "__main__":
     main()
