@@ -10,6 +10,9 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import os
 
+from MutliprocessPlot import MutliprocessPlot
+from multiprocessing import Pipe
+
 import scipy.signal
 sns.set_style('whitegrid')
 
@@ -33,6 +36,16 @@ class SafetyMomentManager:
         self.minMoment = np.array([-10000, -10000, -10000, -10000])
         self.maxMoment = np.array([10000, 10000, 10000, 10000, ])
 
+
+        self.main_conn, self.plot_conn = Pipe()
+        self.plotProcess = MutliprocessPlot(self.plot_conn)
+        self.plotProcess.SetStatus(True)
+
+    def Update(self, data):
+        '''
+        update the safety moment data
+        '''
+        self.main_conn.send(data)
         
 
     def DetectMoment(self):
@@ -61,10 +74,12 @@ class SafetyMomentManager:
                     checkResult, idx = self.CheckMoment(np.hstack((moment, angel[1])))
                     idxList.append(idx)
 
+                    tempdata = np.hstack((moment, self.SafetyMoment[idx, 0:8]))
+
                     if type(momentList) != type(np.array([[1,2,3,4]])):
-                        momentList = np.array(np.hstack((moment, self.SafetyMoment[idx, 0:8]))).reshape(1, 12)
+                        momentList = tempdata.reshape(1, 12)
                     else:
-                        momentList = np.vstack((momentList, np.hstack((moment, self.SafetyMoment[idx, 0:8]))))
+                        momentList = np.vstack((momentList, tempdata))
                     angelList.append(angel[1])
 
 
@@ -74,6 +89,10 @@ class SafetyMomentManager:
                         self.plotMomentList(momentList[-400:])
                         break
                         # return
+                    
+                    # Send Data to plot process
+                    self.Update(tempdata)
+
                 else:
                     print('angel paresed failed!')
                 
