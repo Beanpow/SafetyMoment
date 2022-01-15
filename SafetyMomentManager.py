@@ -45,6 +45,7 @@ class SafetyMomentManager:
         '''
         update the safety moment data
         '''
+        data[8:] *= self.safetyRate
         self.main_conn.send(data)
         
 
