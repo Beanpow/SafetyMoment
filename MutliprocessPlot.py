@@ -52,15 +52,22 @@ class MutliprocessPlot():
         lineMean1, = self.ax1.plot(data[-self.drawSize:, 1], 'g-', lw = 1)
         lineStdUp1, = self.ax1.plot(data[-self.drawSize:, 2], 'g-', lw = 0.5)
         lineStdDown1, = self.ax1.plot(data[-self.drawSize:, 0], 'g-', lw = 0.5)
+        lineReal1, = self.ax1.plot(data[-self.drawSize:, 1], 'r-', lw = 1)
+
         lineMean2, = self.ax2.plot(data[-self.drawSize:, 1])
         lineStdUp2, = self.ax2.plot(data[-self.drawSize:, 2])
         lineStdDown2, = self.ax2.plot(data[-self.drawSize:, 0])
+        lineReal2, = self.ax2.plot(data[-self.drawSize:, 1])
+        
         lineMean3, = self.ax3.plot(data[-self.drawSize:, 1])
         lineStdUp3, = self.ax3.plot(data[-self.drawSize:, 2])
         lineStdDown3, = self.ax3.plot(data[-self.drawSize:, 0])
+        lineReal3, = self.ax3.plot(data[-self.drawSize:, 1])
+        
         lineMean4, = self.ax4.plot(data[-self.drawSize:, 1])
         lineStdUp4, = self.ax4.plot(data[-self.drawSize:, 2])
         lineStdDown4, = self.ax4.plot(data[-self.drawSize:, 0])
+        lineReal4, = self.ax4.plot(data[-self.drawSize:, 1])
 
         self.fig.canvas.draw()
 
@@ -75,19 +82,26 @@ class MutliprocessPlot():
             temp = self.conn.recv()
             data = np.vstack((data, temp))
 
-            lineMean1.set_data(range(len(data[-self.drawSize:, 1])), data[-self.drawSize:, 1])
-            lineStdUp1.set_data(range(len(data[-self.drawSize:, 2])), data[-self.drawSize:, 2])
-            lineStdDown1.set_data(range(len(data[-self.drawSize:, 0])), data[-self.drawSize:, 0])
-            lineMean2.set_data(range(len(data[-self.drawSize:, 1])), data[-self.drawSize:, 1])
-            lineStdUp2.set_data(range(len(data[-self.drawSize:, 2])), data[-self.drawSize:, 2])
-            lineStdDown2.set_data(range(len(data[-self.drawSize:, 0])), data[-self.drawSize:, 0])
-            lineMean3.set_data(range(len(data[-self.drawSize:, 1])), data[-self.drawSize:, 1])
-            lineStdUp3.set_data(range(len(data[-self.drawSize:, 2])), data[-self.drawSize:, 2])
-            lineStdDown3.set_data(range(len(data[-self.drawSize:, 0])), data[-self.drawSize:, 0])
-            lineMean4.set_data(range(len(data[-self.drawSize:, 1])), data[-self.drawSize:, 1])
-            lineStdUp4.set_data(range(len(data[-self.drawSize:, 2])), data[-self.drawSize:, 2])
-            lineStdDown4.set_data(range(len(data[-self.drawSize:, 0])), data[-self.drawSize:, 0])
 
+            lineMean1.set_data(range(len(data[-self.drawSize:, 4])), data[-self.drawSize:, 4])
+            lineStdUp1.set_data(range(len(data[-self.drawSize:, 4])), data[-self.drawSize:, 4] + data[-self.drawSize:, 8])
+            lineStdDown1.set_data(range(len(data[-self.drawSize:, 4])), data[-self.drawSize:, 4] - data[-self.drawSize:, 8])
+            lineReal1.set_data(range(len(data[-self.drawSize:, 0])), data[-self.drawSize:, 0])
+
+            lineMean2.set_data(range(len(data[-self.drawSize:, 5])), data[-self.drawSize:, 5])
+            lineStdUp2.set_data(range(len(data[-self.drawSize:, 5])), data[-self.drawSize:, 5] + data[-self.drawSize:, 9])
+            lineStdDown2.set_data(range(len(data[-self.drawSize:, 5])), data[-self.drawSize:, 5] - data[-self.drawSize:, 9])
+            lineReal2.set_data(range(len(data[-self.drawSize:, 1])), data[-self.drawSize:, 1])
+
+            lineMean3.set_data(range(len(data[-self.drawSize:, 6])), data[-self.drawSize:, 6])
+            lineStdUp3.set_data(range(len(data[-self.drawSize:, 6])), data[-self.drawSize:, 6] + data[-self.drawSize:, 10])
+            lineStdDown3.set_data(range(len(data[-self.drawSize:, 6])), data[-self.drawSize:, 6] - data[-self.drawSize:, 10])
+            lineReal3.set_data(range(len(data[-self.drawSize:, 2])), data[-self.drawSize:, 2])
+
+            lineMean4.set_data(range(len(data[-self.drawSize:, 7])), data[-self.drawSize:, 7])
+            lineStdUp4.set_data(range(len(data[-self.drawSize:, 7])), data[-self.drawSize:, 7] + data[-self.drawSize:, 11])
+            lineStdDown4.set_data(range(len(data[-self.drawSize:, 7])), data[-self.drawSize:, 7] - data[-self.drawSize:, 11])
+            lineReal4.set_data(range(len(data[-self.drawSize:, 3])), data[-self.drawSize:, 3])
 
             self.fig.canvas.restore_region(axbackground1)
             self.fig.canvas.restore_region(axbackground2)
