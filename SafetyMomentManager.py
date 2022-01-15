@@ -38,7 +38,7 @@ class SafetyMomentManager:
 
 
         self.main_conn, self.plot_conn = Pipe()
-        self.plotProcess = MutliprocessPlot(self.plot_conn)
+        self.plotProcess = MutliprocessPlot(self.plot_conn, drawSize=100, bound=[-60, 60])
         self.plotProcess.SetStatus(True)
 
     def Update(self, data):
