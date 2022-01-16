@@ -29,7 +29,7 @@ class SafetyMomentManager:
         self.momentManager = momentManager
         self.angelManager = angelManager
 
-        self.savaPath = savePath
+        self.savePath = './data/' + self.userName + '_Safety.npy'
         
         self.safetyRate = safetyRate
 
@@ -47,8 +47,8 @@ class SafetyMomentManager:
         '''
         data[8:] *= self.safetyRate
         self.main_conn.send(data)
-        
 
+        
     def DetectMoment(self):
         '''
         detect the moment is safe or not
@@ -177,35 +177,61 @@ class SafetyMomentManager:
         ax.fill_between(range(len(self.SafetyMoment[:, 0])), r1, r2, color=color, alpha=0.2)
         plt.show()
 
+    def isSafetyMomentExisting(self):
+        '''
+        check if the safety moment data is existing
+        '''
+        # path = './data/' + self.userName + '_Safety.npy'
+        if os.path.exists(self.savePath):
+            return True
+        else:
+            return False
+
+    def AskForLoadExistingData(self):
+        '''
+        ask if the user want to load existing data
+        '''
+        choise = input("Found Existing Safety Data, Do you want to load from existing data?[y]/n:")
+        if choise == '' or choise == 'y' or choise == 'Y':
+            return True
+        else:
+            return False
+
+    def LoadExistingData(self):
+        '''
+        load existing data
+        '''
+        self.SafetyMoment = np.load(self.savePath)
+        # self.plotPic()
+
+        for i in range(1, self.SafetyMoment.shape[0]):
+            for j in range(4):
+                if self.SafetyMoment[i, 4+j] < 2:
+                    # self.SafetyMoment[i, 4+j] = self.SafetyMoment[i - 1, 4+j]
+                    self.SafetyMoment[i, 4+j] = 2
+        for i in range(8):
+            self.SafetyMoment[:, i] = scipy.signal.savgol_filter(self.SafetyMoment[:, i], 101, 3)
+        
+        # np.save(self.savaPath + '/filterData.npy', self.SafetyMoment)
+
+    def RecordNewData(self):
+        '''
+        record new data
+        '''
+        self.SafetyMoment = self._ProcessRawSafetyMoment()
+
+
 
     # TODO: maybe the 5 should changed 
     def GetSafetyMoment(self):
-        # path = './data/' + self.userName + '_Safety.npy'
-        path = self.savaPath + '/combinedData.npy'
-
-        if os.path.exists(path):
-            choise = input("Found Existing Safety Data, Do you want to load from existing data?[y]/n:")
-            if choise == '' or choise == 'y' or choise == 'Y':
-                self.SafetyMoment = np.load(path)
-                # self.plotPic()
-
-                for i in range(1, self.SafetyMoment.shape[0]):
-                    for j in range(4):
-                        if self.SafetyMoment[i, 4+j] < 2:
-                            # self.SafetyMoment[i, 4+j] = self.SafetyMoment[i - 1, 4+j]
-                            self.SafetyMoment[i, 4+j] = 2
-                for i in range(8):
-                    self.SafetyMoment[:, i] = scipy.signal.savgol_filter(self.SafetyMoment[:, i], 101, 3)
-                
-                # np.save(self.savaPath + '/filterData.npy', self.SafetyMoment)
-
+        if self.isSafetyMomentExisting():
+            if self.AskForLoadExistingData():
+                self.LoadExistingData()
             else:
-                self.SafetyMoment = self._ProcessRawSafetyMoment()
+                self.RecordNewData()
         
         else:
-            input("You will record the raw data, press any key to continue...press CTRL-C to terminate")
-
-            self.SafetyMoment = self._ProcessRawSafetyMoment()
+            self.RecordNewData()
 
         
 
