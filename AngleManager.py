@@ -65,7 +65,7 @@ class AngleManager:
     def walkOrPauseButton(self):
         self._sendMessage(self.walkOrPause)
 
-    def autoStartWalk(self):
+    def preStartWalk(self):
         #done init
         self.waitingForState(0)
 
@@ -79,8 +79,14 @@ class AngleManager:
         #waiting for state 1
         self.waitingForState(1)
 
+    def realStartWalk(self):
         #walk
         self.walkOrPauseButton()
+
+    def autoStartWalk(self):
+        self.preStartWalk()
+        self.realStartWalk()
+        
 
     def manualControl(self):
         while 1:
