@@ -17,7 +17,7 @@ import scipy.signal
 sns.set_style('whitegrid')
 
 class SafetyMomentManager:
-    def __init__(self, userName, momentManager, angelManager, sampleRate=20, autoPlot = False, savePath = './data', safetyRate = 3.5):
+    def __init__(self, userName, momentManager, angleManager, sampleRate=20, autoPlot = False, savePath = './data', safetyRate = 3.5):
         '''
         userName:       The User Name
         sampleRate:     Hz, the value must less than 4, because of the momentManager have the limited rate
@@ -27,7 +27,7 @@ class SafetyMomentManager:
         self.autoPlot = autoPlot
 
         self.momentManager = momentManager
-        self.angelManager = angelManager
+        self.angleManager = angleManager
 
         self.savePath = './data/' + self.userName + '_Safety.npy'
         
@@ -53,7 +53,7 @@ class SafetyMomentManager:
         '''
         detect the moment is safe or not
         '''
-        angelList = []
+        angleList = []
         momentList = None
         idxList = []
         indx = 0
@@ -68,11 +68,11 @@ class SafetyMomentManager:
             while True:
                 indx += 1
                 moment = self.momentManager.GetAllMoments()[0]
-                angel = self.angelManager.getInfo()
+                angle = self.angleManager.getInfo()
 
 
-                if angel[2] == 1:
-                    checkResult, idx = self.CheckMoment(np.hstack((moment, angel[1])))
+                if angle[2] == 1:
+                    checkResult, idx = self.CheckMoment(np.hstack((moment, angle[1])))
                     idxList.append(idx)
 
                     tempdata = np.hstack((moment, self.SafetyMoment[idx, 0:8]))
@@ -81,11 +81,11 @@ class SafetyMomentManager:
                         momentList = tempdata.reshape(1, 12)
                     else:
                         momentList = np.vstack((momentList, tempdata))
-                    angelList.append(angel[1])
+                    angleList.append(angle[1])
 
 
                     if not checkResult:
-                        self.angelManager.emergencyStopButton()
+                        self.angleManager.emergencyStopButton()
                         print('Emergency Stop!')
                         self.plotMomentList(momentList[-400:])
                         break
@@ -95,31 +95,31 @@ class SafetyMomentManager:
                     self.Update(tempdata)
 
                 else:
-                    print('angel paresed failed!')
+                    print('angle paresed failed!')
                 
 
         except KeyboardInterrupt:
             print("Program Terminated!")
         finally:
-            angelList = np.array(angelList)
-            angelList = np.reshape(angelList, (len(angelList), 1))
-            print(momentList.shape, angelList.shape)
-            np.save('./data/detect_' + self.userName + time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime()) + '.npy', np.hstack((momentList, angelList)))
+            angleList = np.array(angleList)
+            angleList = np.reshape(angleList, (len(angleList), 1))
+            print(momentList.shape, angleList.shape)
+            np.save('./data/detect_' + self.userName + time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime()) + '.npy', np.hstack((momentList, angleList)))
 
-    def CheckMoment(self, momentAndAngel):
+    def CheckMoment(self, momentAndAngle):
         '''
         check the moment is safe or not
         '''
-        momentAndAngel = momentAndAngel.reshape(1, momentAndAngel.shape[0])
+        momentAndAngle = momentAndAngle.reshape(1, momentAndAngle.shape[0])
 
-        idx = np.abs(self.SafetyMoment[:, -1] - momentAndAngel[:, -1]).argmin()
+        idx = np.abs(self.SafetyMoment[:, -1] - momentAndAngle[:, -1]).argmin()
         for i in range(4):
-            if abs(self.SafetyMoment[idx, i] - momentAndAngel[0, i]) > self.safetyRate * self.SafetyMoment[idx, 4+i]:
+            if abs(self.SafetyMoment[idx, i] - momentAndAngle[0, i]) > self.safetyRate * self.SafetyMoment[idx, 4+i]:
                 return False, idx
 
         return True, idx
 
-    def SimpleCheckMoment(self, momentAndAngel):
+    def SimpleCheckMoment(self, momentAndAngle):
         dangerousRate = 10
 
         if max(self.maxMoment) > 9999 or min(self.minMoment) < -9999:
@@ -127,7 +127,7 @@ class SafetyMomentManager:
             self.minMoment = np.min(self.rawMomentData, axis=0)
         
 
-        if (momentAndAngel[:4] > dangerousRate + self.maxMoment).any() or (momentAndAngel[:4] < self.minMoment - dangerousRate).any():
+        if (momentAndAngle[:4] > dangerousRate + self.maxMoment).any() or (momentAndAngle[:4] < self.minMoment - dangerousRate).any():
             return False, 0
         
         return True, 0
@@ -304,13 +304,13 @@ class SafetyMomentManager:
                     plt.clf()
                 startTime = time.time()
                 moment = self.momentManager.GetAllMoments()
-                angel = self.angelManager.getInfo()
+                angle = self.angleManager.getInfo()
 
-                if angel[2] == 1:
+                if angle[2] == 1:
                     momentData.append(moment[0])
-                    angleData.append(angel[1])
+                    angleData.append(angle[1])
                 else:
-                    print('angel paresed failed!', angel)
+                    print('angle paresed failed!', angle)
                 
                 endTime = time.time()
                 
@@ -335,7 +335,7 @@ class SafetyMomentManager:
 
 
 if __name__ == "__main__":
-    angleManagerPort = input("Please input angel manager port (like \"com8\"): ")
+    angleManagerPort = input("Please input angle manager port (like \"com8\"): ")
     if angleManagerPort == "":
         angleManagerPort = "com3"
         
@@ -344,9 +344,9 @@ if __name__ == "__main__":
         momentManagerPort = "com4"
 
     momentManager = MomentManager(momentManagerPort)
-    angelManager = AngleManager(angleManagerPort)
+    angleManager = AngleManager(angleManagerPort)
     # momentManager = 1
-    # angelManager = 2
+    # angleManager = 2
     
 
     smm = SafetyMomentManager(
@@ -354,10 +354,10 @@ if __name__ == "__main__":
         sampleRate=35,
         autoPlot = False,
         momentManager = momentManager,
-        angelManager = angelManager,
+        angleManager = angleManager,
         safetyRate=4
         )
-    angelManager.autoStartWalk()
+    angleManager.autoStartWalk()
     smm.GetSafetyMoment()
     # smm.plotPic()
     smm.DetectMoment()
