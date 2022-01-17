@@ -20,12 +20,13 @@ class MainServer:
             momentManager=self.momentManager,
             angleManager=self.angleManager
         )
-        self.socketServer = self.InitSocketServer()
+        self.SocketServer = None
+        self.InitSocketServer()
 
     def InitSocketServer(self):
-        sockerServer = SocketServer()
+        self.socketServer = SocketServer()
         self.socketServer.create_socket()
-        return sockerServer
+
 
     def SendData(self, data):
         self.socketServer.send_data(data)
@@ -108,7 +109,7 @@ class MainServer:
                         angelList.append(angel[1])
 
                         # TODO: maybe need to change the 0.3
-                        if abs(angel[1] - keyAngel) > 0.3:
+                        if abs(angel[1] - keyAngel) < 0.3:
                             flag += 1
                             if flag == 10:
                                 self.SendData('Start Stimulation')
@@ -127,7 +128,7 @@ class MainServer:
                             # return
                         
                         # Send Data to plot process
-                        self.smm.Update(tempdata)
+                        # self.smm.Update(tempdata)
 
                     else:
                         print('angel paresed failed!')
