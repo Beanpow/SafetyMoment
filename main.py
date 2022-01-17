@@ -109,9 +109,9 @@ class MainServer:
                         angelList.append(angel[1])
 
                         # TODO: maybe need to change the 0.3
-                        if abs(angel[1] - keyAngel) < 0.3:
+                        if abs(angel[1] - keyAngel) < 0.01:
                             flag += 1
-                            if flag == 10:
+                            if flag == 100:
                                 self.SendData('Start Stimulation')
 
                         if not checkResult:
