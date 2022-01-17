@@ -36,6 +36,7 @@ class SafetyMomentManager:
         self.minMoment = np.array([-10000, -10000, -10000, -10000])
         self.maxMoment = np.array([10000, 10000, 10000, 10000, ])
 
+        self.SafetyMoment = None
 
         self.main_conn, self.plot_conn = Pipe()
         self.plotProcess = MutliprocessPlot(self.plot_conn, drawSize=100, bound=[-60, 60])
