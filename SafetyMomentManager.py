@@ -275,11 +275,11 @@ class SafetyMomentManager:
             combinedData[:, i] = scipy.signal.savgol_filter(combinedData[:, i], 51, 3)
 
         # print(combinedData)
-        np.save(self.savaPath + '/combinedData.npy', combinedData)
+        np.save(self.savePath, combinedData)
         return combinedData
 
 
-    def _RecordRawSafetyMoment(self, timeDuration):
+    def _RecordRawSafetyMoment(self, timeDurationRecord):
         '''
         record angle and moment 
         '''
@@ -287,13 +287,13 @@ class SafetyMomentManager:
         momentData = []
         angleData = []
 
-        if timeDuration is None:
+        if timeDurationRecord is None:
             timeLong = input("Please input how long you want to record,[60](s):")
             if timeLong == "":
                 timeLong = "60"
             timeLong = int(timeLong)
         else:
-            timeLong = timeDuration
+            timeLong = timeDurationRecord
 
         try:
             if self.autoPlot:
