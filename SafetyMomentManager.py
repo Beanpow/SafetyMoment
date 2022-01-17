@@ -214,11 +214,11 @@ class SafetyMomentManager:
         
         # np.save(self.savaPath + '/filterData.npy', self.SafetyMoment)
 
-    def RecordNewData(self):
+    def RecordNewData(self, timeDuration = None):
         '''
         record new data
         '''
-        self.SafetyMoment = self._ProcessRawSafetyMoment()
+        self.SafetyMoment = self._ProcessRawSafetyMoment(timeDuration)
 
 
 
@@ -236,11 +236,11 @@ class SafetyMomentManager:
         
 
     # TODO
-    def _ProcessRawSafetyMoment(self):
+    def _ProcessRawSafetyMoment(self, timeDuration):
         '''
         process raw safety moment data to get the final safety moment data throught Least squares method 
         '''
-        rawMomentData, rawAngleData = self._RecordRawSafetyMoment()
+        rawMomentData, rawAngleData = self._RecordRawSafetyMoment(timeDuration)
         self.rawMomentData = rawMomentData
         self.rawAngleData = rawAngleData
         assert(len(rawAngleData) == len(rawMomentData))
@@ -279,7 +279,7 @@ class SafetyMomentManager:
         return combinedData
 
 
-    def _RecordRawSafetyMoment(self):
+    def _RecordRawSafetyMoment(self, timeDuration):
         '''
         record angle and moment 
         '''
@@ -287,10 +287,13 @@ class SafetyMomentManager:
         momentData = []
         angleData = []
 
-        timeLong = input("Please input how long you want to record,[60](s):")
-        if timeLong == "":
-            timeLong = "60"
-        timeLong = int(timeLong)
+        if timeDuration is None:
+            timeLong = input("Please input how long you want to record,[60](s):")
+            if timeLong == "":
+                timeLong = "60"
+            timeLong = int(timeLong)
+        else:
+            timeLong = timeDuration
 
         try:
             if self.autoPlot:
