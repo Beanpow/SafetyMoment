@@ -51,15 +51,15 @@ class MainServer:
                         data = self.ReciveData()
                         if data == 'ReadOldData':
                             self.smm.LoadExistingData()
-                        elif data == 'ReadNewData':
-                            self.smm.LoadNewData()
+                        elif data[:11] == 'ReadNewData':
+                            self.smm.RecordNewData(int(data[11:]))
                         self.SendData('3')
                     else:
-                        self.smm.LoadNewData()
+                        self.smm.RecordNewData(20)
                         self.SendData('3')
                     status = 3
 
-                    data = self.ReciveData()
+                    # data = self.ReciveData()
                     break
         
 
@@ -79,10 +79,10 @@ class MainServer:
             self.SendEmergencyStop()
 
             # Prevent the robot stopping before the stimulation
-            while True:
-                data = self.ReciveData()
-                if data == 'Emergency Stop':
-                    break
+            # while True:
+            #     data = self.ReciveData()
+            #     if data == 'Emergency Stop':
+            #         break
 
             self.angelManager.emergencyStopButton()
         
