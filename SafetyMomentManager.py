@@ -93,7 +93,7 @@ class SafetyMomentManager:
                         # return
                     
                     # Send Data to plot process
-                    self.Update(tempdata)
+                    # self.Update(tempdata)
 
                 else:
                     print('angle paresed failed!')
