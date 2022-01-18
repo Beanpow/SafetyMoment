@@ -20,6 +20,7 @@ class MainServer:
             momentManager=self.momentManager,
             angleManager=self.angleManager
         )
+        self.userName = userName
         self.SocketServer = None
         self.InitSocketServer()
 
@@ -40,12 +41,12 @@ class MainServer:
         while True:
             data = self.ReciveData()
             if data == 'preWalk':
-                self.smm.angelManager.preStartWalk()
+                self.smm.angleManager.preStartWalk()
                 self.SendData('1')
                 status = 1
             elif data == 'walk':
                 if status == 1:
-                    self.smm.angelManager.realStartWalk()
+                    self.smm.angleManager.realStartWalk()
 
                     if self.smm.isSafetyMomentExisting():
                         self.SendData('2')
@@ -74,7 +75,7 @@ class MainServer:
         indx = 0
 
         flag = 0
-        keyAngel = 0
+        keyAngel = 0.624
 
         if self.smm.SafetyMoment is None:
             self.SendEmergencyStop()
@@ -85,7 +86,7 @@ class MainServer:
             #     if data == 'Emergency Stop':
             #         break
 
-            self.angelManager.emergencyStopButton()
+            self.angleManager.emergencyStopButton()
         
         else:
             try:
@@ -93,17 +94,17 @@ class MainServer:
                 while True:
                     indx += 1
                     moment = self.momentManager.GetAllMoments()[0]
-                    angel = self.angelManager.getInfo()
+                    angel = self.angleManager.getInfo()
 
 
                     if angel[2] == 1:
                         checkResult, idx = self.smm.CheckMoment(np.hstack((moment, angel[1])))
                         idxList.append(idx)
 
-                        tempdata = np.hstack((moment, self.smm.SafetyMoment[idx, 0:8]))
+                        tempdata = np.hstack((moment, self.smm.SafetyMoment[idx, 0:8], indx, time.time()))
 
                         if type(momentList) != type(np.array([[1,2,3,4]])):
-                            momentList = tempdata.reshape(1, 12)
+                            momentList = tempdata.reshape(1, 14)
                         else:
                             momentList = np.vstack((momentList, tempdata))
                         angelList.append(angel[1])
@@ -111,19 +112,21 @@ class MainServer:
                         # TODO: maybe need to change the 0.3
                         if abs(angel[1] - keyAngel) < 0.01:
                             flag += 1
-                            if flag == 100:
+                            print(flag)
+                            if flag == 20:
+                                print('Start Stimulation, indx: ', indx, 'time: ', time.time())
                                 self.SendData('Start Stimulation')
 
                         if not checkResult:
                             self.SendEmergencyStop()
 
-                            while True:
-                                data = self.ReciveData()
-                                if data == 'Emergency Stop':
-                                    break
+                            # while True:
+                            #     data = self.ReciveData()
+                            #     if data == 'Emergency Stop':
+                            #         break
 
-                            self.angelManager.emergencyStopButton()
-                            print('Emergency Stop!')
+                            self.angleManager.emergencyStopButton()
+                            print('Emergency Stop! indx:', indx, 'time: ', time.time())
                             break
                             # return
                         
