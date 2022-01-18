@@ -47,7 +47,7 @@ class MutliprocessPlot():
 
     def DrawPic(self, isDraw):
         self.initFig()
-        data = np.array([]).reshape(0,3)
+        data = np.array([]).reshape(0,14)
         
         lineMean1, = self.ax1.plot(data[-self.drawSize:, 1], 'g-', lw = 1)
         lineStdUp1, = self.ax1.plot(data[-self.drawSize:, 2], 'g-', lw = 0.5)
