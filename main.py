@@ -75,7 +75,7 @@ class MainServer:
         indx = 0
 
         flag = 0
-        keyAngel = 0.624
+        keyAngel = 0.124
 
         if self.smm.SafetyMoment is None:
             self.SendEmergencyStop()
@@ -110,7 +110,7 @@ class MainServer:
                         angelList.append(angel[1])
 
                         # TODO: maybe need to change the 0.3
-                        if abs(angel[1] - keyAngel) < 0.01:
+                        if abs(angel[1] - keyAngel) < 0.05:
                             flag += 1
                             print(flag)
                             if flag == 20:
